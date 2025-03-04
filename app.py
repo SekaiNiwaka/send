@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, jsonify
+from flask_socketio import SocketIO, emit
 import sqlite3
 import os
 
 app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*")  # WebSocket用の設定
 
 # データベースの初期化
 def init_db():
@@ -33,13 +35,17 @@ def save_post(text):
 def home():
     return render_template("index.html", post=get_latest_post())
 
-@app.route("/send", methods=["POST"])
-def send():
-    data = request.get_json()
-    save_post(data["text"])
-    return jsonify({"status": "success", "message": "投稿を保存しました"})
+# クライアントから投稿を受信したときの処理
+@socketio.on("send_post")
+def handle_post(data):
+    text = data["text"]
+    save_post(text)  # データベースに保存
+    latest_post = get_latest_post()
+    
+    # 全クライアントに最新の投稿を送信（リアルタイム更新）
+    emit("update_post", {"text": latest_post}, broadcast=True)
 
 if __name__ == "__main__":
     init_db()  # サーバー起動時にDBを作成
     PORT = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=PORT, debug=True)
+    socketio.run(app, host="0.0.0.0", port=PORT, debug=True)
