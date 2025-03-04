@@ -13,7 +13,7 @@ db_pool = psycopg2.pool.SimpleConnectionPool(
     user=os.getenv("DB_USER"),
     password=os.getenv("DB_PASSWORD"),
     host=os.getenv("DB_HOST"),
-    port=os.getenv("DB_PORT")
+    port=os.getenv("DB_PORT", "5432")  # デフォルトで5432を使用
 )
 
 # データベース初期化
