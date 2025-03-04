@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
 import sqlite3
 import os
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")  # WebSocket用の設定
+socketio = SocketIO(app, cors_allowed_origins="*")  # WebSocketの設定
 
 # データベースの初期化
 def init_db():

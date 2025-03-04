@@ -1,5 +1,10 @@
 const socket = io();  // WebSocketの接続を確立
 
+// 接続が成功した時
+socket.on("connect", function() {
+    console.log("WebSocket connected!");  // 接続成功のメッセージを表示
+});
+
 // メッセージを送信
 function sendMessage() {
     let message = document.getElementById("input-text").value;
