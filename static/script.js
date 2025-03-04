@@ -1,8 +1,8 @@
+// 送信処理
 document.getElementById('submit-btn').addEventListener('click', function() {
     const content = document.getElementById('message-input').value;
     if (content.trim() === '') return;
 
-    console.log('Sending message:', content); // デバッグ用
     fetch('/submit', {
         method: 'POST',
         headers: {
@@ -12,26 +12,19 @@ document.getElementById('submit-btn').addEventListener('click', function() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Response:', data); // デバッグ用
         if (data.status === 'success') {
-            document.getElementById('message-input').value = '';
-            updateMessage();
+            document.getElementById('message-input').value = ''; // 入力クリア
         }
     })
     .catch(error => console.error('Error:', error));
 });
 
-document.getElementById('update-btn').addEventListener('click', function() {
-    console.log('Updating message'); // デバッグ用
-    updateMessage();
-});
-
-function updateMessage() {
-    fetch('/update')
-    .then(response => response.json())
-    .then(data => {
-        console.log('Updated message:', data.message); // デバッグ用
-        document.getElementById('message-display').textContent = data.message;
-    })
-    .catch(error => console.error('Error:', error));
-}
+// リアルタイム更新（SSE）
+const source = new EventSource('/stream');
+source.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    document.getElementById('message-display').textContent = data.message;
+};
+source.onerror = function() {
+    console.error('SSE connection error');
+};
