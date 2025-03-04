@@ -1,5 +1,2 @@
-flask
-flask-socketio
-gunicorn
-werkzeug==2.0.3
-eventlet
+Flask==2.3.3
+sqlite3

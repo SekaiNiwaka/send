@@ -1,17 +1,33 @@
-var socket = io.connect(window.location.hostname);
+document.getElementById('submit-btn').addEventListener('click', function() {
+    const content = document.getElementById('message-input').value;
+    if (content.trim() === '') return;
 
-// 新しい投稿が送信されるとき
-socket.on('new_post', function(data) {
-    document.getElementById('display-area').innerText = data.text;
+    fetch('/submit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `content=${encodeURIComponent(content)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            document.getElementById('message-input').value = ''; // 入力クリア
+            updateMessage(); // 送信後に即時更新
+        }
+    })
+    .catch(error => console.error('Error:', error));
 });
 
-function sendMessage() {
-    let message = document.getElementById("input-text").value;
-    fetch("/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: message })
-    }).then(() => {
-        document.getElementById("input-text").value = ''; // 入力フィールドをリセット
-    });
+document.getElementById('update-btn').addEventListener('click', function() {
+    updateMessage();
+});
+
+function updateMessage() {
+    fetch('/update')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('message-display').textContent = data.message;
+    })
+    .catch(error => console.error('Error:', error));
 }

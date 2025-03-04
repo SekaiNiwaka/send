@@ -1,62 +1,52 @@
 from flask import Flask, render_template, request, jsonify
-from flask_socketio import SocketIO, emit
 import sqlite3
-import os
+from datetime import datetime
 
 app = Flask(__name__)
-socketio = SocketIO(app)
 
-# データベースの初期化
+# データベース初期化
 def init_db():
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect('messages.db')
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS messages 
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                  content TEXT NOT NULL, 
+                  timestamp TEXT NOT NULL)''')
     conn.commit()
     conn.close()
 
-# 最新の投稿を取得
-def get_latest_post():
-    conn = sqlite3.connect("database.db")
+# 最新のメッセージを取得
+def get_latest_message():
+    conn = sqlite3.connect('messages.db')
     c = conn.cursor()
-    c.execute("SELECT text FROM posts ORDER BY id DESC LIMIT 1")
-    post = c.fetchone()
+    c.execute("SELECT content FROM messages ORDER BY timestamp DESC LIMIT 1")
+    result = c.fetchone()
     conn.close()
-    return post[0] if post else "まだ投稿がありません"
+    return result[0] if result else "まだ投稿がありません"
 
-# 投稿を保存
-def save_post(text):
-    conn = sqlite3.connect("database.db")
+# メッセージを保存
+def save_message(content):
+    conn = sqlite3.connect('messages.db')
     c = conn.cursor()
-    c.execute("INSERT INTO posts (text) VALUES (?)", (text,))
+    c.execute("INSERT INTO messages (content, timestamp) VALUES (?, ?)", 
+              (content, datetime.now().isoformat()))
     conn.commit()
     conn.close()
 
-@app.route("/")
-def home():
-    return render_template("index.html", post=get_latest_post())
+@app.route('/')
+def index():
+    return render_template('index.html', message=get_latest_message())
 
-@app.route("/send", methods=["POST"])
-def send():
-    data = request.get_json()
-    save_post(data["text"])
-    # 投稿が送信されたら、全クライアントに新しい投稿を通知
-    socketio.emit("new_post", {"text": data["text"]})
-    return jsonify({"status": "success", "message": "投稿を保存しました"})
+@app.route('/submit', methods=['POST'])
+def submit():
+    content = request.form['content']
+    save_message(content)
+    return jsonify({'status': 'success', 'message': content})
 
-# 最新の投稿を返すエンドポイント
-@app.route("/latest")
-def latest():
-    post = get_latest_post()
-    return jsonify({"text": post})
+@app.route('/update', methods=['GET'])
+def update():
+    return jsonify({'message': get_latest_message()})
 
-@socketio.on("connect")
-def handle_connect():
-    print("Client connected")
-
-@socketio.on("disconnect")
-def handle_disconnect():
-    print("Client disconnected")
-
-if __name__ == "__main__":
-    init_db()  # サーバー起動時にDBを作成
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+if __name__ == '__main__':
+    init_db()
+    app.run(host='0.0.0.0', port=5000)
