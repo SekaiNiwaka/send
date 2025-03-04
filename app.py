@@ -1,8 +1,6 @@
-from flask import Flask, render_template, request, jsonify, Response
+from flask import Flask, render_template, request, jsonify
 import sqlite3
 from datetime import datetime
-import json
-import time
 
 app = Flask(__name__)
 
@@ -32,19 +30,6 @@ def save_message(content):
                   (content, datetime.now().isoformat()))
         conn.commit()
 
-# SSEイベントストリーム
-@app.route('/stream')
-def stream():
-    def event_stream():
-        last_message = None
-        while True:
-            current_message = get_latest_message()
-            if current_message != last_message:
-                last_message = current_message
-                yield f"data: {json.dumps({'message': current_message})}\n\n"
-            time.sleep(1)  # 1秒ごとにチェック（負荷軽減のため）
-    return Response(event_stream(), mimetype="text/event-stream")
-
 @app.route('/')
 def index():
     return render_template('index.html', message=get_latest_message())
@@ -55,8 +40,12 @@ def submit():
     save_message(content)
     return jsonify({'status': 'success', 'message': content})
 
-# 起動時にデータベース初期化
-init_db()
+@app.route('/update', methods=['GET'])
+def update():
+    return jsonify({'message': get_latest_message()})
+
+# アプリケーション起動時にデータベースを初期化
+init_db()  # これを追加して、起動時に必ず実行
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
