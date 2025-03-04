@@ -9,6 +9,10 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+@app.route("/")  # ルートにアクセス可能か確認
+def home():
+    return "Hello, Flask is running!"
+
 @app.before_first_request
 def init_db():
     with app.app_context():
@@ -39,4 +43,4 @@ def send_message():
     return jsonify({'status': 'error', 'message': 'No content provided'}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000, debug=True)
