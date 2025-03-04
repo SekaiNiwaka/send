@@ -3,16 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flask 投稿サイト</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>リアルタイム投稿</title>
+    <script src="https://cdn.jsdelivr.net/npm/socket.io@4.0.1/dist/socket.io.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h1>Flask 投稿サイト</h1>
-    <div id="display-area">{{ post }}</div>
-    <textarea id="input-text" placeholder="メッセージを入力..."></textarea>
-    <button onclick="sendMessage()">送信</button>
+    <h1>最新の投稿</h1>
+    <div id="postArea">
+        <p>{{ post }}</p>
+    </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.min.js"></script>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <h2>投稿を送信</h2>
+    <textarea id="postText" rows="4" cols="50"></textarea><br>
+    <button id="sendButton">投稿する</button>
+
+    <script>
+        // 最新の投稿を取得
+        function getLatestPost() {
+            $.get("/latest", function(data) {
+                $("#postArea").html(`<p>${data.text}</p>`);
+            });
+        }
+
+        // ページロード時に5秒ごとに最新投稿を取得
+        setInterval(getLatestPost, 5000);
+
+        // 投稿送信処理
+        $("#sendButton").click(function() {
+            const text = $("#postText").val();
+            $.ajax({
+                url: "/send",
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ text: text }),
+                success: function(response) {
+                    console.log("投稿成功");
+                    // 投稿送信後に最新投稿を取得
+                    getLatestPost();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
