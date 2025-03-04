@@ -14,13 +14,13 @@ def init_db():
                       timestamp TEXT NOT NULL)''')
         conn.commit()
 
-# 最新メッセージ取得
-def get_latest_message():
+# 最新10件のメッセージを取得
+def get_latest_messages():
     with sqlite3.connect('messages.db') as conn:
         c = conn.cursor()
-        c.execute("SELECT content FROM messages ORDER BY timestamp DESC LIMIT 1")
-        result = c.fetchone()
-    return result[0] if result else "まだ投稿がありません"
+        c.execute("SELECT content, timestamp FROM messages ORDER BY timestamp DESC LIMIT 10")
+        result = c.fetchall()
+    return [{'content': row[0], 'timestamp': row[1]} for row in result] if result else []
 
 # メッセージ保存
 def save_message(content):
@@ -32,7 +32,8 @@ def save_message(content):
 
 @app.route('/')
 def index():
-    return render_template('index.html', message=get_latest_message())
+    messages = get_latest_messages()
+    return render_template('index.html', messages=messages)
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -42,10 +43,11 @@ def submit():
 
 @app.route('/update', methods=['GET'])
 def update():
-    return jsonify({'message': get_latest_message()})
+    messages = get_latest_messages()
+    return jsonify({'messages': messages})
 
 # アプリケーション起動時にデータベースを初期化
-init_db()  # これを追加して、起動時に必ず実行
+init_db()
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

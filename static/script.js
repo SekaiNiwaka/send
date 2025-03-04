@@ -2,7 +2,6 @@ document.getElementById('submit-btn').addEventListener('click', function() {
     const content = document.getElementById('message-input').value;
     if (content.trim() === '') return;
 
-    console.log('Sending message:', content); // デバッグ用
     fetch('/submit', {
         method: 'POST',
         headers: {
@@ -12,26 +11,29 @@ document.getElementById('submit-btn').addEventListener('click', function() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Response:', data); // デバッグ用
         if (data.status === 'success') {
             document.getElementById('message-input').value = '';
-            updateMessage();
+            updateMessages(); // 送信後に即時更新
         }
     })
     .catch(error => console.error('Error:', error));
 });
 
 document.getElementById('update-btn').addEventListener('click', function() {
-    console.log('Updating message'); // デバッグ用
-    updateMessage();
+    updateMessages();
 });
 
-function updateMessage() {
+function updateMessages() {
     fetch('/update')
     .then(response => response.json())
     .then(data => {
-        console.log('Updated message:', data.message); // デバッグ用
-        document.getElementById('message-display').textContent = data.message;
+        const messageList = document.getElementById('message-display');
+        messageList.innerHTML = ''; // 既存の内容をクリア
+        data.messages.forEach(msg => {
+            const li = document.createElement('li');
+            li.textContent = `${msg.timestamp}: ${msg.content}`;
+            messageList.appendChild(li);
+        });
     })
     .catch(error => console.error('Error:', error));
 }

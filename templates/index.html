@@ -7,8 +7,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>最新メッセージ</h1>
-        <div id="message-display" class="message-display">{{ message }}</div>
+        <h1>最新メッセージ（直近10件）</h1>
+        <ul id="message-display" class="message-display">
+            {% for message in messages %}
+                <li>{{ message.timestamp }}: {{ message.content }}</li>
+            {% endfor %}
+        </ul>
         
         <textarea id="message-input" placeholder="メッセージを入力"></textarea>
         <button id="submit-btn">送信</button>

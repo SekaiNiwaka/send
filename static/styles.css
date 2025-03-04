@@ -13,35 +13,56 @@ body {
     background: white;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
 }
 
 .message-display {
-    width: 300px;
-    min-height: 100px;
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
     border: 1px solid #ccc;
-    margin: 20px auto;
+    border-radius: 5px;
     padding: 10px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    list-style-type: none;
+}
+
+.message-display li {
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
     word-wrap: break-word;
 }
 
+.message-display li:last-child {
+    border-bottom: none;
+}
+
 textarea {
-    width: 300px;
-    height: 80px;
-    margin: 10px 0;
-    padding: 10px;
-    border-radius: 5px;
+    width: 100%;
+    height: 60px;
     border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    resize: none;
+    margin-bottom: 10px;
+    box-sizing: border-box;
 }
 
 button {
     padding: 10px 20px;
-    margin: 5px;
-    border: none;
-    border-radius: 5px;
     background-color: #007bff;
     color: white;
+    border: none;
+    border-radius: 5px;
     cursor: pointer;
+    margin: 5px;
 }
 
 button:hover {
