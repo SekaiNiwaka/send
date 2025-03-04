@@ -15,7 +15,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# 最新のメッセージを取得
+# 最新メッセージ取得
 def get_latest_message():
     conn = sqlite3.connect('messages.db')
     c = conn.cursor()
@@ -24,7 +24,7 @@ def get_latest_message():
     conn.close()
     return result[0] if result else "まだ投稿がありません"
 
-# メッセージを保存
+# メッセージ保存
 def save_message(content):
     conn = sqlite3.connect('messages.db')
     c = conn.cursor()
@@ -47,6 +47,7 @@ def submit():
 def update():
     return jsonify({'message': get_latest_message()})
 
+# ローカル開発用のみ実行
 if __name__ == '__main__':
     init_db()
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
