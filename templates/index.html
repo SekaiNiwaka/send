@@ -16,17 +16,19 @@
     <h2>投稿を送信</h2>
     <textarea id="postText" rows="4" cols="50"></textarea><br>
     <button id="sendButton">投稿する</button>
+    
+    <!-- 手動更新ボタン -->
+    <button id="refreshButton">更新</button>
 
     <script>
-        // 最新の投稿を取得
+        const socket = io.connect("http://localhost:5000");
+
+        // 最新投稿を取得
         function getLatestPost() {
             $.get("/latest", function(data) {
                 $("#postArea").html(`<p>${data.text}</p>`);
             });
         }
-
-        // ページロード時に5秒ごとに最新投稿を取得
-        setInterval(getLatestPost, 5000);
 
         // 投稿送信処理
         $("#sendButton").click(function() {
@@ -38,10 +40,19 @@
                 data: JSON.stringify({ text: text }),
                 success: function(response) {
                     console.log("投稿成功");
-                    // 投稿送信後に最新投稿を取得
-                    getLatestPost();
+                    getLatestPost();  // 送信後に最新投稿を取得
                 }
             });
+        });
+
+        // 更新ボタンで最新投稿を取得
+        $("#refreshButton").click(function() {
+            getLatestPost();
+        });
+
+        // サーバーから新しい投稿が来たときに画面を更新
+        socket.on("new_post", function(data) {
+            $("#postArea").html(`<p>${data.text}</p>`);
         });
     </script>
 </body>

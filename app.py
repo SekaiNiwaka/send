@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit
 import sqlite3
+import os
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -38,6 +39,8 @@ def home():
 def send():
     data = request.get_json()
     save_post(data["text"])
+    # 投稿が送信されたら、全クライアントに新しい投稿を通知
+    socketio.emit("new_post", {"text": data["text"]})
     return jsonify({"status": "success", "message": "投稿を保存しました"})
 
 # 最新の投稿を返すエンドポイント
@@ -46,6 +49,14 @@ def latest():
     post = get_latest_post()
     return jsonify({"text": post})
 
+@socketio.on("connect")
+def handle_connect():
+    print("Client connected")
+
+@socketio.on("disconnect")
+def handle_disconnect():
+    print("Client disconnected")
+
 if __name__ == "__main__":
     init_db()  # サーバー起動時にDBを作成
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
