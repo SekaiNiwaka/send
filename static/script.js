@@ -1,18 +1,17 @@
-const socket = io();  // WebSocketの接続を確立
+var socket = io.connect(window.location.hostname);
 
-// 接続が成功した時
-socket.on("connect", function() {
-    console.log("WebSocket connected!");  // 接続成功のメッセージを表示
+// 新しい投稿が送信されるとき
+socket.on('new_post', function(data) {
+    document.getElementById('display-area').innerText = data.text;
 });
 
-// メッセージを送信
 function sendMessage() {
     let message = document.getElementById("input-text").value;
-    socket.emit("send_post", { text: message });  // サーバーに送信
-    document.getElementById("input-text").value = "";  // 入力欄をクリア
+    fetch("/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: message })
+    }).then(() => {
+        document.getElementById("input-text").value = ''; // 入力フィールドをリセット
+    });
 }
-
-// サーバーから最新の投稿を受信し、画面を更新
-socket.on("update_post", function(data) {
-    document.getElementById("display-area").innerText = data.text;
-});
